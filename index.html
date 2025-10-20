@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>潮汕牛肉 (手机优化)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
@@ -35,7 +35,6 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 15px; /* Slightly reduced padding for mobile */
             box-sizing: border-box;
-            /* No max-width here, let it fill the available width */
         }
 
         .header {
@@ -96,46 +95,19 @@
             text-align: left; /* Ensure text aligns left */
         }
 
-        /* Flatpickr calendar popup styling */
+        /* Flatpickr calendar popup styling (kept for functionality) */
         .flatpickr-calendar {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Keep shadow for calendar popup */
-            border: 1px solid #ccc; /* Keep border for calendar popup */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ccc;
         }
 
         /* Flatpickr internal elements to ensure no unwanted borders/backgrounds */
-        /* If Flatpickr decided to wrap the input, ensure its internal styling doesn't add borders */
         .flatpickr-wrapper {
-            display: flex; /* Ensure wrapper uses flex to align input and icon if wrap:true was used */
-            flex-grow: 1; /* Match the flex-grow of the input[type="text"] */
-            max-width: none; /* Match the max-width of the input[type="text"] */
-            /* Ensure wrapper itself has no border or background */
-            border: none !important;
-            background: transparent !important;
-        }
-
-        /* Remove default button/icon styling from Flatpickr's appended elements if they exist */
-        .flatpickr-wrapper .flatpickr-toggle,
-        .flatpickr-wrapper .flatpickr-clear {
-            border: none !important;
-            background: transparent !important;
-            height: auto;
-            width: auto;
-            margin-left: 5px; /* Space between input and icon */
             display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            padding: 0;
-            /* If the icon itself has a visible outline or border, target it more specifically */
-            outline: none !important;
-        }
-
-        /* Additional specific Flatpickr overrides if needed for visual consistency */
-        .flatpickr-input[readonly] {
-            cursor: default; /* Make readonly input appear non-editable */
-        }
-        .flatpickr-input.active {
-            /* Style when the input is active/focused if different from default */
+            flex-grow: 1;
+            max-width: none;
+            border: none !important;
+            background: transparent !important;
         }
 
 
@@ -156,6 +128,7 @@
         th, td {
             padding: 0; /* Remove default padding from cells to let input control it */
             text-align: left;
+            word-break: break-word; /* 允许单元格内容在必要时换行 */
         }
 
         /* Inputs inside table cells should fill their container and have internal padding */
@@ -167,6 +140,7 @@
             box-sizing: border-box; /* Include padding in the element's total width */
             font-size: 0.9em; /* Slightly smaller font for table inputs */
             background: transparent; /* Make input background transparent */
+            min-width: 0; /* 尝试将输入框的最小宽度设置为0，允许其尽可能缩小 */
         }
 
         td input[readonly] {
@@ -185,6 +159,51 @@
         tbody tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
+        /* New styles for add/delete functionality */
+        .add-row-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        
+        /* 替换删除按钮为图标（叉号）的新样式 */
+        .delete-row-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%; /* 填充单元格 */
+            height: 100%;
+            padding: 0; /* 移除内边距 */
+            background-color: transparent; /* 透明背景 */
+            color: #d9534f; /* 红色图标 */
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em; /* 放大叉号图标 */
+            line-height: 1;
+            box-sizing: border-box;
+        }
+
+        /* 调整操作列的宽度，使其更紧凑 */
+        th:last-child {
+            width: 5%; /* 占用很小的宽度 */
+            min-width: 30px; /* 确保一个最小可点击宽度 */
+            max-width: 40px;
+        }
+        
+        td:last-child {
+            padding: 0; /* 移除单元格内边距，让按钮紧贴边界 */
+            text-align: center;
+        }
+        /* End of new styles */
 
         .summary-row {
             text-align: right;
@@ -223,26 +242,30 @@
             <span>客户：</span>
             <input type="text" id="customerName" value="2店">
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>品名</th>
-                    <th>数量(斤)</th>
-                    <th>单价</th>
-                    <th>金额</th>
-                    <th>备注</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" class="item-name" value="顶级雪花"></td>
-                    <td><input type="number" class="item-quantity" value="5" min="0"></td>
-                    <td><input type="number" class="item-unit-price" value="175" min="0"></td>
-                    <td><input type="number" class="item-amount" value="875" readonly></td>
-                    <td><input type="text" class="item-notes" value=""></td>
-                </tr>
-            </tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>品名</th>
+                        <th>数量(斤)</th>
+                        <th>单价</th>
+                        <th>金额</th>
+                        <th>操作</th> </tr>
+                </thead>
+                <tbody>
+                    <tr class="item-row">
+                        <td><input type="text" class="item-name" value="顶级雪花"></td>
+                        <td><input type="number" class="item-quantity" value="5" min="0"></td>
+                        <td><input type="number" class="item-unit-price" value="175" min="0"></td>
+                        <td><input type="number" class="item-amount" value="875.00" readonly></td>
+                        <td><button type="button" class="delete-row-button">&times;</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="button" id="addRowButton" class="add-row-button">添加品项</button>
+
         <div class="summary-row due-row">
             <span>应收：<span id="amountDue">875.00</span></span>
         </div>
@@ -256,9 +279,27 @@
 
     <script>
         /* JavaScript starts here */
+        // 尝试阻止多指触控缩放
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                // event.preventDefault(); // 暂时注释，以免影响正常滚动
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function(event) {
+            if (event.touches.length > 1) {
+                // event.preventDefault(); // 暂时注释，以免影响正常滚动
+            }
+        }, { passive: false });
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const receiptDateInput = document.getElementById('receiptDate');
-            const customerNameInput = document.getElementById('customerName');
+            const itemsTableBody = document.querySelector('#itemsTable tbody');
+            const addRowButton = document.getElementById('addRowButton');
+            const amountDueSpan = document.getElementById('amountDue');
+            const amountOwedSpan = document.getElementById('amountOwed');
+
 
             // Calculate tomorrow's date
             const today = new Date();
@@ -270,26 +311,20 @@
                 dateFormat: "Y年n月j日", // "YYYY年M月D日" format
                 locale: "zh", // Use Chinese locale for "年", "月", "日"
                 defaultDate: tomorrow, // Set default date to tomorrow's date object
-                wrap: false // Ensure flatpickr doesn't wrap the input, allowing our CSS to directly target the input
+                wrap: false
             });
 
-
-            const itemQuantityInputs = document.querySelectorAll('.item-quantity');
-            const itemUnitPriceInputs = document.querySelectorAll('.item-unit-price');
-            const itemAmountInputs = document.querySelectorAll('.item-amount');
-            const itemNotesInputs = document.querySelectorAll('.item-notes');
-            const itemNameInputs = document.querySelectorAll('.item-name');
-
-            const amountDueSpan = document.getElementById('amountDue');
-            const amountOwedSpan = document.getElementById('amountOwed');
 
             // Function to calculate and update amounts
             function updateAmounts() {
                 let totalAmount = 0;
+                // Get all current item rows
+                const itemRows = itemsTableBody.querySelectorAll('.item-row');
 
-                itemQuantityInputs.forEach((quantityInput, index) => {
-                    const unitPriceInput = itemUnitPriceInputs[index];
-                    const amountInput = itemAmountInputs[index];
+                itemRows.forEach(row => {
+                    const quantityInput = row.querySelector('.item-quantity');
+                    const unitPriceInput = row.querySelector('.item-unit-price');
+                    const amountInput = row.querySelector('.item-amount');
 
                     const quantity = parseFloat(quantityInput.value) || 0;
                     const unitPrice = parseFloat(unitPriceInput.value) || 0;
@@ -304,16 +339,63 @@
                 amountOwedSpan.textContent = totalAmount.toFixed(2); // Assuming挂账 = 应收
             }
 
-            // Add event listeners to quantity and unit price inputs
-            itemQuantityInputs.forEach(input => {
-                input.addEventListener('input', updateAmounts);
-            });
+            // Function to create a new row HTML
+            function createNewRow() {
+                const newRow = document.createElement('tr');
+                newRow.classList.add('item-row');
+                newRow.innerHTML = `
+                    <td><input type="text" class="item-name" value="吊龙伴"></td>
+                    <td><input type="number" class="item-quantity" value="0" min="0"></td>
+                    <td><input type="number" class="item-unit-price" value="0" min="0"></td>
+                    <td><input type="number" class="item-amount" value="0.00" readonly></td>
+                    <td><button type="button" class="delete-row-button">&times;</button></td>
+                `;
+                return newRow;
+            }
 
-            itemUnitPriceInputs.forEach(input => {
-                input.addEventListener('input', updateAmounts);
-            });
+            // Function to add a row to the table
+            function addRow() {
+                const newRow = createNewRow();
+                itemsTableBody.appendChild(newRow);
+                bindRowEvents(newRow); // Bind events to the new row
+                updateAmounts(); // Update total after adding a row (with default values)
+            }
 
-            // Initial calculation when the page loads
+            // Function to delete a row
+            function deleteRow(button) {
+                const row = button.closest('.item-row');
+                if (itemsTableBody.querySelectorAll('.item-row').length > 1) {
+                    row.remove();
+                    updateAmounts();
+                } else {
+                    alert('至少保留一行品项数据！');
+                }
+            }
+
+            // Function to bind event listeners to a specific row
+            function bindRowEvents(row) {
+                const quantityInput = row.querySelector('.item-quantity');
+                const unitPriceInput = row.querySelector('.item-unit-price');
+                const deleteButton = row.querySelector('.delete-row-button');
+
+                // Bind amount update to quantity and unit price changes
+                if (quantityInput) quantityInput.addEventListener('input', updateAmounts);
+                if (unitPriceInput) unitPriceInput.addEventListener('input', updateAmounts);
+
+                // Bind delete function to the delete button
+                if (deleteButton) deleteButton.addEventListener('click', (e) => deleteRow(e.target));
+            }
+
+
+            // --- Initialization ---
+
+            // 1. Bind event listeners to the existing rows
+            itemsTableBody.querySelectorAll('.item-row').forEach(bindRowEvents);
+
+            // 2. Bind event listener to the "Add Row" button
+            addRowButton.addEventListener('click', addRow);
+
+            // 3. Initial calculation when the page loads
             updateAmounts();
         });
         /* JavaScript ends here */
